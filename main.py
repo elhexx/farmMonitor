@@ -1,31 +1,42 @@
 from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
 
-from ser import ArduinoSerial
+import schedule
+from threading import Thread
+import time
+
+
 
 app = Flask(__name__)
 
+app.config.from_pyfile('config.py')
 
-
-con = None
-
-@app.before_first_request
-def connect_serial():
-    global con
-    con = ArduinoSerial()
+db = SQLAlchemy(app)
+db.create_all()
 
 
 
-@app.route('/get/<name>')
-def send(name):
-    if name == 'temp' :
-        return con.get_temp()
-    if name == 'humd':
-        return con.get_Humd()
-    return name
 
-@app.route('/')
-def index():
-    return render_template('farm.html')
+
+
+from views import *
+
+
+def run_every_10_seconds():
+    getAll()
+    print 'done'
+
+
+def run_schedule():
+    while 1:
+        schedule.run_pending()
+        time.sleep(1)
+
+
 
 if __name__ == '__main__':
+
+    schedule.every(5).seconds.do(run_every_10_seconds)
+    t = Thread(target=run_schedule)
+    t.start()
     app.run(host= '0.0.0.0', debug=True)

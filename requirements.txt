@@ -1,2 +1,5 @@
 flask
 pyserial
+flask_sqlalchemy
+schedule
+MySQL-python

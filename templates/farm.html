@@ -3,6 +3,7 @@
     <title>
         happy Farm ^_^
     </title>
+    <script src="{{ url_for('static', filename='Chart.min.js') }}"></script>
     <style>
         * {
             margin: 0;
@@ -10,33 +11,33 @@
             box-sizing: border-box;
         }
         body {
-            background: url('../static/img/farm-back.jpeg');
-            background-size: cover
+            position: relative;
+            height: 100vh;
         }
         #container {
             position: relative;
-            width: 1100px;
-            height: 500px;
-            margin: 50px auto;
-            background: rgba(0,0,0,.5);
-            display: flex;
+            width: 80%;
+            height: 100vh;
             justify-content:space-around;
-            border: 1px solid #fff
+            border: 1px solid #fff;
+            overflow-y: auto;
+            float: right
         }
         .circle {
             position: relative;
-            width: 400px;
-            height: 400px;
-            background: #fff;
-            clip-path: circle(50% at 50% 70%);
-            overflow: hidden
+            width: 300px;
+            height: 150px;
+            background: #eee;
+            clip-path: circle(50% at 50% 100%);
+            overflow: hidden;
+            display: inline-block
         }
         .circle .cover {
             position: absolute;
-            background: #999;
+            background: #fff;
             width: 90%;
             height: 90%;
-            clip-path: circle(50% at 50% 67%);
+            clip-path: circle(50% at 50% 100%);
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -48,6 +49,7 @@
             height: 200%;
             left: 50%;
             top: 100%;
+            background: #ce7979;
             transform: translate(-50%,0) rotateZ(0deg);
             transform-origin: 50% 0%;
             transition: .5s all ease-in-out
@@ -55,82 +57,306 @@
         div span {
             display: block;
             text-align: center;
-            color: #fff;
+            color: #000;
             margin: 20px 0;
             font-size: 30px;
             font-family: monospace
         }
         .text {
-            line-height: 360px;
+            line-height: 150px;
+        }
+        #container > div {
+            position: relative;
+            padding: 0 10px;
+            border-bottom: 1px solid #eee;
+            height: 300px
+        }
+        .charte {
+            height: 300px;
+            width: 400px;
+            float: right;
+        }
+        aside {
+            width: 20%;
+            position: relative;
+            float: left;
+            height: 100vh;
+            border-right: 1px solid #eee;
+            overflow : hidden
+        }
+        aside img {
+            width: 100%;
+            bottom: -50px;
+            position: absolute;
+        }
+        #alert {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 350px;
+            height: 200px;
+            background: #efefef;
+            transform: translate(-50%,-50%);
+            z-index: 5;
+            border-radius: 5px;
+            display: none;
+            animation: fadeIn .5s ease-in-out;
+            text-align: center
+        }
+        #alert > span {
+            color: #f00;
+            border-bottom: 1px solid #fff;
+        }
+        #alert button {
+            background: #c3152d;
+            color: #fff;
+            border: 0;
+            outline: none;
+            font-size: 20px;
+            padding: 5px 20px;
+            border-radius: 2px;
+            cursor: pointer
+        }
+        @keyframes fadeIn {
+            0%{transform: translate(-50%,-50%) scale(0);}
+            80%{transform: translate(-50%,-50%) scale(1.2);}
+            100%{transform: translate(-50%,-50%) scale(1);}
         }
     </style>
 </head>
 <body>
+    <div id="alert">
+        <span>alert !!!</span>
+        <span style="color: #333; font-size: 15px; border: none"></span>
+        <button onclick="document.getElementById('alert').style.display = 'none'">close</button>
+    </div>
+    <aside>
+        <img src="{{url_for('static', filename = 'img/farm.jpg')}}">
+
+    </aside>
     <div id="container">
         <div>
+            <span style="position: absolute;bottom: 50px;left: 10px">tamperature</span>
             <div class="circle">
                 <div class="cover">
-                    <span class="text"></span>
+                   <span class="text"></span>
                 </div>
                 <div class="progress"></div>
             </div>
-            <span>-Humidity-</span>
+            <div class="charte">
+                
+                    <canvas id="chart1" width="400" height="300"></canvas>                 
+                    <script>
+                    
+                       // bar chart data
+                       var barData1 = {
+                            labels : ['','','','','','','','','','','','','','',''],
+                            datasets : [{
+                                    fillColor: "rgba(255,255,255,0)",
+                                    strokeColor: "#999",
+                                    pointColor: "#555",
+                                    pointStrokeColor: "#fff",
+                                    pointHighlightFill: "#fff",
+                                    pointHighlightStroke: "#555",
+                                    bezierCurve : true,
+                                    data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                            }]
+                        }
+                        Chart.defaults.global.animationSteps = 75;
+                        Chart.defaults.global.tooltipYPadding = 5;
+                        Chart.defaults.global.tooltipCornerRadius = 5;
+                        Chart.defaults.global.tooltipTitleFontStyle = "normal";
+                        Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+                        Chart.defaults.global.animationEasing = "easeOutBounce";
+                        Chart.defaults.global.responsive = true;
+                        Chart.defaults.global.scaleLineColor = "#222";
+                        Chart.defaults.global.scaleFontSize = 16;
+
+                       // get bar chart canvas
+                        var mychart1 = document.getElementById("chart1").getContext("2d");
+
+                        steps = 2
+                        max = 100
+                        // draw bar chart
+                        var LineChartDemo = new Chart(mychart1).Line(barData1, {
+                            scaleOverride: true,
+                            scaleSteps: steps,
+                            scaleStepWidth: Math.ceil(max / steps),
+                            scaleStartValue: 0,
+                            scaleShowVerticalLines: true,
+                            scaleShowGridLines : false,
+                            barShowStroke : true,
+                            scaleShowLabels: true,
+                            bezierCurve: true,
+                        })
+                    </script>
+            </div>
         </div>
         <div>
+            <span style="position: absolute;bottom: 50px;left: 10px">humidity</span>
             <div class="circle">
                 <div class="cover">
                     <span class="text"></span>
                 </div>
                 <div class="progress"></div>
             </div>
-            <span>-Temperature-</span>
+            <div class="charte">
+                    <canvas id="chart2" width="400" height="300"></canvas>
+                    <script>
+
+                       // bar chart data
+                       var barData2 = {
+                            labels : ['','','','','','','','','','','','','','',''],
+                            datasets : [{
+                                    fillColor: "rgba(255,255,255,0)",
+                                    strokeColor: "#999",
+                                    pointColor: "#555",
+                                    pointStrokeColor: "#fff",
+                                    pointHighlightFill: "#fff",
+                                    pointHighlightStroke: "#555",
+                                    bezierCurve : true,
+                                    data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                            }]
+                        }
+                       // get bar chart canvas
+                        var mychart2 = document.getElementById("chart2").getContext("2d");
+                        // draw bar chart
+                        var LineChartDemo = new Chart(mychart2).Line(barData2, {
+                            scaleOverride: true,
+                            scaleSteps: steps,
+                            scaleStepWidth: Math.ceil(max / steps),
+                            scaleStartValue: 0,
+                            scaleShowVerticalLines: true,
+                            scaleShowGridLines : false,
+                            barShowStroke : true,
+                            scaleShowLabels: true,
+                            bezierCurve: true,
+                        })
+                    </script>
+            </div>            
+        </div>
+        <div>
+            <span style="position: absolute;bottom: 50px;left: 10px">Sol Humidity</span>
+            <div class="circle">
+                <div class="cover">
+                    <span class="text"></span>
+                </div>
+                <div class="progress"></div>
+            </div>
+            <div class="charte">
+                 <canvas id="chart3" width="400" height="300"></canvas>
+                    <script>
+
+                       // bar chart data
+                       var barData3 = {
+                            labels : ['','','','','','','','','','','','','','',''],
+                            datasets : [{
+                                    fillColor: "rgba(255,255,255,0)",
+                                    strokeColor: "#999",
+                                    pointColor: "#555",
+                                    pointStrokeColor: "#fff",
+                                    pointHighlightFill: "#fff",
+                                    pointHighlightStroke: "#555",
+                                    bezierCurve : true,
+                                    data : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                            }]
+                        }
+                       // get bar chart canvas
+                        var mychart3 = document.getElementById("chart3").getContext("2d");
+
+                        max = 1000
+                        // draw bar chart
+                        var LineChartDemo = new Chart(mychart3).Line(barData3, {
+                            scaleOverride: true,
+                            scaleSteps: steps,
+                            scaleStepWidth: Math.ceil(500),
+                            scaleStartValue: 0,
+                            scaleShowVerticalLines: true,
+                            scaleShowGridLines : false,
+                            barShowStroke : true,
+                            scaleShowLabels: true,
+                            bezierCurve: true,
+                        })
+                    </script>
+            </div>
         </div>
     </div>
     <script>
-    window.onload = function(){
-        var progress = document.querySelectorAll('.circle .progress')
-        var text = document.querySelectorAll('.text')
-        var val
-        setInterval(function(){
-
-          for(i=0;i<progress.length;i++){
-              if (i==1) {
-                val = httpGet('/get/temp')
-                text[i].textContent = val + "°"
-                if (val<60) {
-                    progress[i].style.background = "#dcf03b"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                } else if (val<120) {
-                    progress[i].style.background = "#4fb648"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                } else {
-                    progress[i].style.background = "#d34f31"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                }
-              }
-              else {
-                val = httpGet('/get/humd')
-                text[i].textContent = val + "%"
-                if (val<60) {
-                    progress[i].style.background = "#dcf03b"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                } else if (val<120) {
-                    progress[i].style.background = "#4fb648"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                } else {
-                    progress[i].style.background = "#d34f31"
-                    progress[i].style.transform = "translate(-50%,0) rotateZ(" + val + "deg)"
-                }
-              }
-          }
-
-       }, 1000)
-        function httpGet(theUrl) {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
-            xmlHttp.send( null );
-            return parseFloat(xmlHttp.responseText);
+        window.onload = () => {
+            function close(){
+                document.getElementById('alert').style.display = 'none'
+            }
+            setInterval(() => {
+                httpGetAndDraw('/get/all')
+            }, 3000)
         }
-      }
+        function httpGetAndDraw(theUrl) {
+            let xhttp = new XMLHttpRequest()
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                     let response = JSON.parse(this.responseText)
+                     document.getElementsByClassName('progress')[0].style.transform = `translate(-50%,0) rotateZ(${parseInt(response[0])*180/100}deg)`
+                     document.querySelectorAll('.circle .cover .text')[0].innerText = `${parseInt(response[0])}`
+                     document.getElementsByClassName('progress')[1].style.transform = `translate(-50%,0) rotateZ(${parseInt(response[1])*180/100}deg)`
+                     document.querySelectorAll('.circle .cover .text')[1].innerText = `${parseInt(response[1])}`
+                     document.getElementsByClassName('progress')[2].style.transform = `translate(-50%,0) rotateZ(${parseInt(response[2])*180/1000}deg)`
+                     document.querySelectorAll('.circle .cover .text')[2].innerText = `${parseInt(response[2])}`
+
+
+
+                    barData1.datasets[0].data.shift()
+                    barData1.datasets[0].data.push(response[0])
+                    Chart.defaults.global.animationSteps = 1
+                    LineChartDemo = new Chart(mychart1).Line(barData1, {
+                        scaleOverride: true,
+                        scaleSteps: steps,
+                        scaleStepWidth: Math.ceil(100 / steps),
+                        scaleStartValue: 0,
+                        scaleShowVerticalLines: true,
+                        scaleShowGridLines : false,
+                        barShowStroke : true,
+                        scaleShowLabels: true,
+                        bezierCurve: true
+                    })
+
+                    barData2.datasets[0].data.shift()
+                    barData2.datasets[0].data.push(response[1])
+
+                    LineChartDemo = new Chart(mychart2).Line(barData2, {
+                        scaleOverride: true,
+                        scaleSteps: steps,
+                        scaleStepWidth: Math.ceil(100 / steps),
+                        scaleStartValue: 0,
+                        scaleShowVerticalLines: true,
+                        scaleShowGridLines : false,
+                        barShowStroke : true,
+                        scaleShowLabels: true,
+                        bezierCurve: true
+                    })
+
+                    barData3.datasets[0].data.shift()
+                    barData3.datasets[0].data.push(response[2])
+
+                    LineChartDemo = new Chart(mychart3).Line(barData3, {
+                        scaleOverride: true,
+                        scaleSteps: steps,
+                        scaleStepWidth: Math.ceil(1000 / steps),
+                        scaleStartValue: 0,
+                        scaleShowVerticalLines: true,
+                        scaleShowGridLines : false,
+                        barShowStroke : true,
+                        scaleShowLabels: true,
+                        bezierCurve: true
+                    })
+                    if(parseInt(response[3]) >= 1) {
+                        document.getElementById('alert').children[1].innerText = `the smoke level is high`
+                        document.getElementById('alert').style.display = 'block'
+                    }
+                    console.log(parseInt(response[3]))
+                }
+            }
+            xhttp.open("GET", theUrl, true)
+            xhttp.send()
+        }
     </script>
 </body>
